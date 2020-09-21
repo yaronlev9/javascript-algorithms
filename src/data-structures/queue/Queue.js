@@ -6,14 +6,14 @@ export default class Queue {
     // structures are quite similar. Namely, they both operate mostly on
     // the elements at the beginning and the end. Compare enqueue/dequeue
     // operations of Queue with append/deleteHead operations of LinkedList.
-    this.linkedList = new LinkedList();
+    this.lst = [];
   }
 
   /**
    * @return {boolean}
    */
   isEmpty() {
-    return !this.linkedList.head;
+    return this.lst.length === 0;
   }
 
   /**
@@ -21,11 +21,11 @@ export default class Queue {
    * @return {*}
    */
   peek() {
-    if (!this.linkedList.head) {
-      return null;
+    if (this.lst.length !== 0) {
+      return this.lst[0];
     }
 
-    return this.linkedList.head.value;
+    return false;
   }
 
   /**
@@ -34,8 +34,11 @@ export default class Queue {
    * @param {*} value
    */
   enqueue(value) {
-    this.linkedList.append(value);
-  }
+    for (let i = 0; i < this.length - 1; i++){
+      this.lst[i + 1] = this.lst[i];
+    }
+    this.lst[0] = value;
+  }   
 
   /**
    * Remove the element at the front of the queue (the head of the linked list).
@@ -43,8 +46,14 @@ export default class Queue {
    * @return {*}
    */
   dequeue() {
-    const removedHead = this.linkedList.deleteHead();
-    return removedHead ? removedHead.value : null;
+    if (this.lst.length === 0){
+      return null;
+    }
+    const first = this.lst[0];
+    for (let i = 1; i < this.length; i++){
+      this.lst[i - 1] = this.lst[i];
+    }
+    return first;
   }
 
   /**
@@ -53,6 +62,6 @@ export default class Queue {
    */
   toString(callback) {
     // Return string representation of the queue's linked list.
-    return this.linkedList.toString(callback);
+    return this.lst.toString(callback);
   }
 }

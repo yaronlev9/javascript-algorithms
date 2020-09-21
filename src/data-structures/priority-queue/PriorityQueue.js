@@ -1,19 +1,50 @@
-import MinHeap from '../heap/MinHeap';
-import Comparator from '../../utils/comparator/Comparator';
-
-// It is the same as min heap except that when comparing two elements
-// we take into account its priority instead of the element's value.
-export default class PriorityQueue extends MinHeap {
+export default class PriorityQueue {
   constructor() {
-    // Call MinHip constructor first.
-    super();
+    // We're going to implement Queue based on LinkedList since the two
+    // structures are quite similar. Namely, they both operate mostly on
+    // the elements at the beginning and the end. Compare enqueue/dequeue
+    // operations of Queue with append/deleteHead operations of LinkedList.
+    this.lst = [];
+  }
 
-    // Setup priorities map.
-    this.priorities = new Map();
+  /**
+   * @return {boolean}
+   */
+  isEmpty() {
+    return this.lst.length === 0;
+  }
 
-    // Use custom comparator for heap elements that will take element priority
-    // instead of element value into account.
-    this.compare = new Comparator(this.comparePriority.bind(this));
+  /**
+   * Read the element at the front of the queue without removing it.
+   * @return {*}
+   */
+  peek() {
+    if (this.lst.length !== 0) {
+      return this.lst[0].item;
+    }
+
+    return null;
+  }  
+
+  /**
+   * Remove the element at the front of the queue (the head of the linked list).
+   * If the queue is empty, return null.
+   * @return {*}
+   */
+  poll() {
+    if (this.lst.length === 0){
+      return null;
+    }
+    const first = this.lst.shift();
+    return first.item;
+  }
+
+  /**
+   * @param [callback]
+   * @return {string}
+   */
+  toString(callback) {
+    return this.lst.toString(callback);
   }
 
   /**
@@ -23,20 +54,20 @@ export default class PriorityQueue extends MinHeap {
    * @return {PriorityQueue}
    */
   add(item, priority = 0) {
-    this.priorities.set(item, priority);
-    super.add(item);
-    return this;
-  }
-
-  /**
-   * Remove item from priority queue.
-   * @param {*} item - item we're going to remove.
-   * @param {Comparator} [customFindingComparator] - custom function for finding the item to remove
-   * @return {PriorityQueue}
-   */
-  remove(item, customFindingComparator) {
-    super.remove(item, customFindingComparator);
-    this.priorities.delete(item);
+    this.lst.push({'item':item, 'priority':priority});
+    let partition = this.lst.length - 1;
+    for (let i = 0; i < this.lst.length; i++){
+      if (priority < this.lst[i].priority){
+        partition = i;
+        break;
+      }
+    }
+    let temp;
+    for (let i = this.lst.length - 1; i > partition; i--){
+      temp = this.lst[i];
+      this.lst[i] = this.lst[i - 1];
+      this.lst[i - 1] = temp;
+    }
     return this;
   }
 
@@ -47,18 +78,18 @@ export default class PriorityQueue extends MinHeap {
    * @return {PriorityQueue}
    */
   changePriority(item, priority) {
-    this.remove(item, new Comparator(this.compareValue));
+    if (this.hasValue(item)){
+      let index;
+      for (let i = 0; i < this.lst.length; i++){
+        if (item === this.lst[i].item){
+          index = i;
+          break;
+        }
+      }
+      this.lst.splice(index, 1);
+    }
     this.add(item, priority);
     return this;
-  }
-
-  /**
-   * Find item by ite value.
-   * @param {*} item
-   * @return {Number[]}
-   */
-  findByValue(item) {
-    return this.find(item, new Comparator(this.compareValue));
   }
 
   /**
@@ -67,32 +98,11 @@ export default class PriorityQueue extends MinHeap {
    * @return {boolean}
    */
   hasValue(item) {
-    return this.findByValue(item).length > 0;
-  }
-
-  /**
-   * Compares priorities of two items.
-   * @param {*} a
-   * @param {*} b
-   * @return {number}
-   */
-  comparePriority(a, b) {
-    if (this.priorities.get(a) === this.priorities.get(b)) {
-      return 0;
+    for (let i = 0; i < this.lst.length; i++){
+      if (this.lst[i].item === item){
+        return true;
+      }
     }
-    return this.priorities.get(a) < this.priorities.get(b) ? -1 : 1;
-  }
-
-  /**
-   * Compares values of two items.
-   * @param {*} a
-   * @param {*} b
-   * @return {number}
-   */
-  compareValue(a, b) {
-    if (a === b) {
-      return 0;
-    }
-    return a < b ? -1 : 1;
+    return false;
   }
 }
